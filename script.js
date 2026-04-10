@@ -627,31 +627,36 @@ class IssueReporter {
             template_id: 'your_template_id', // Replace with your EmailJS template ID
             user_id: 'your_user_id', // Replace with your EmailJS user ID
             template_params: {
+                to_email: 'cmo@telangana.gov.in', // Telangana CM Office email
                 to_name: 'Telangana CM Office',
                 from_name: data.name,
                 area: data.area,
                 city: data.city,
                 problem: data.problem,
                 timestamp: new Date().toLocaleString(),
-                image_url: data.image
+                image_url: data.image,
+                latitude: data.latitude,
+                longitude: data.longitude,
+                full_address: data.fullAddress
             }
         };
 
         // Send to Telangana CM office
         await this.sendEmail(emailData);
         
-        // Send confirmation to user
-        const userEmailData = {
+        // Send confirmation to you
+        const adminEmailData = {
             ...emailData,
             template_params: {
                 ...emailData.template_params,
-                to_email: 'user-email@example.com', // You'll need to collect user email
-                to_name: data.name,
-                subject: 'Issue Report Confirmation'
+                to_email: 'gomitechnology@gmail.com', // Your personal email
+                to_name: 'Admin - Public Issues',
+                subject: 'New Issue Report Received',
+                report_type: 'New Public Issue Report'
             }
         };
         
-        await this.sendEmail(userEmailData);
+        await this.sendEmail(adminEmailData);
     }
 
     async sendEmail(emailData) {
