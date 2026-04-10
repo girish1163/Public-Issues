@@ -53,7 +53,6 @@ class IssueReporter {
         // New modern elements
         this.charCount = document.getElementById('char-count');
         this.problemTextarea = document.getElementById('problem');
-        this.bottomNav = document.querySelectorAll('.nav-item');
         
         this.currentPosition = null;
         this.placesService = null;
@@ -78,11 +77,6 @@ class IssueReporter {
         
         // Character counter
         this.problemTextarea.addEventListener('input', () => this.updateCharCount());
-        
-        // Bottom navigation
-        this.bottomNav.forEach(item => {
-            item.addEventListener('click', (e) => this.handleNavClick(e));
-        });
         
         // Close modal when clicking outside
         this.modal.addEventListener('click', (e) => {
@@ -462,39 +456,7 @@ class IssueReporter {
         }
     }
 
-    handleNavClick(e) {
-        const clickedNav = e.currentTarget;
-        const section = clickedNav.dataset.section;
-        
-        // Remove active class from all nav items
-        this.bottomNav.forEach(item => item.classList.remove('active'));
-        
-        // Add active class to clicked item
-        clickedNav.classList.add('active');
-        
-        // Scroll to section (optional enhancement)
-        this.scrollToSection(section);
-    }
-
-    scrollToSection(section) {
-        let targetElement;
-        switch(section) {
-            case 'camera':
-                targetElement = document.querySelector('.camera-section');
-                break;
-            case 'location':
-                targetElement = document.querySelector('.location-section');
-                break;
-            case 'report':
-                targetElement = document.querySelector('.form-section');
-                break;
-        }
-        
-        if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
+    
     async startCamera() {
         try {
             console.log('Starting camera...');
