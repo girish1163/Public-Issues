@@ -497,6 +497,8 @@ class IssueReporter {
 
     async startCamera() {
         try {
+            console.log('Starting camera...');
+            
             // Show camera overlay for better framing
             const overlay = document.querySelector('.camera-overlay');
             if (overlay) {
@@ -511,11 +513,13 @@ class IssueReporter {
                 } 
             });
             
+            console.log('Camera stream obtained');
             this.video.srcObject = this.stream;
             this.video.style.display = 'block';
             this.placeholder.style.display = 'none';
             
             this.video.onloadedmetadata = () => {
+                console.log('Video metadata loaded');
                 this.captureBtn.innerHTML = '<div class="btn-content"><i class="fas fa-camera"></i><span>Capture</span></div>';
                 this.captureBtn.onclick = () => this.capturePhoto();
             };
@@ -526,6 +530,8 @@ class IssueReporter {
     }
 
     capturePhoto() {
+        console.log('Capturing photo...');
+        
         // Set canvas dimensions to match video for better quality
         this.canvas.width = this.video.videoWidth;
         this.canvas.height = this.video.videoHeight;
@@ -536,6 +542,7 @@ class IssueReporter {
         context.drawImage(this.video, 0, 0);
         
         this.capturedImage = this.canvas.toDataURL('image/jpeg', 0.9); // Higher quality
+        console.log('Image captured, data URL length:', this.capturedImage.length);
         
         // Stop camera stream
         if (this.stream) {
@@ -548,19 +555,24 @@ class IssueReporter {
             overlay.style.display = 'none';
         }
         
-        // Show captured image - Fix the display issue
+        // Show captured image - Fix display issue
         this.video.style.display = 'none';
         this.canvas.style.display = 'block';
+        this.placeholder.style.display = 'none';
         this.captureBtn.style.display = 'none';
         this.retakeBtn.style.display = 'inline-flex';
+        
+        console.log('Display updated - Canvas visible:', this.canvas.style.display);
     }
 
-    showLocationLoading(show) {
-        if (show) {
-            this.locationLoading.style.display = 'flex';
-            this.currentLocation.textContent = 'Detecting location...';
+    updateCharCount() {
+        const currentLength = this.problemTextarea.value.length;
+        this.charCount.textContent = currentLength;
+        
+        if (currentLength > 500) {
+            this.charCount.style.color = '#dc3545';
         } else {
-            this.locationLoading.style.display = 'none';
+            this.charCount.style.color = '#6c757d';
         }
     }
 
