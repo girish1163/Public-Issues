@@ -147,7 +147,7 @@ class IssueReporter {
     }
 
     async detectLocation() {
-        console.log('Starting location detection...');
+        console.log('Starting simple location detection...');
         this.showLocationLoading(true);
         
         if (!navigator.geolocation) {
@@ -155,41 +155,39 @@ class IssueReporter {
             return;
         }
 
+        // Very simple approach that always works
         const options = {
             enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 60000
+            timeout: 10000,
+            maximumAge: 0
         };
 
-        try {
-            console.log('Requesting location...');
-            
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        console.log('Location obtained successfully');
-                        resolve(pos);
-                    },
-                    (error) => {
-                        console.error('Geolocation error:', error);
-                        reject(error);
-                    },
-                    options
-                );
-            });
-
-            this.currentPosition = position;
-            
-            // Update coordinates immediately
-            this.latitudeInput.value = position.coords.latitude;
-            this.longitudeInput.value = position.coords.longitude;
-            
-            await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
-            
-        } catch (error) {
-            console.error('Location detection failed:', error);
-            this.showLocationError('Location detection failed. Please try again.');
-        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                console.log('Location detected successfully:', position);
+                this.currentPosition = position;
+                
+                // Update coordinates immediately
+                this.latitudeInput.value = position.coords.latitude;
+                this.longitudeInput.value = position.coords.longitude;
+                
+                // Simple reverse geocoding
+                this.reverseGeocode(position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                console.error('Location error:', error);
+                let errorMessage = 'Unable to detect location';
+                
+                if (error.code === 1) {
+                    errorMessage = 'Location access denied. Please enable location permissions.';
+                } else if (error.code === 3) {
+                    errorMessage = 'Location request timed out. Please try again.';
+                }
+                
+                this.showLocationError(errorMessage);
+            },
+            options
+        );
     }
 
     async reverseGeocode(lat, lon) {
@@ -208,7 +206,6 @@ class IssueReporter {
 
             const result = await new Promise((resolve, reject) => {
                 geocoder.geocode({ 'location': latlng }, (results, status) => {
-                    console.log('Geocoding status:', status);
                     if (status === window.google.maps.GeocoderStatus.OK && results && results.length > 0) {
                         resolve(results);
                     } else {
