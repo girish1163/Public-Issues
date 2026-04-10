@@ -6,6 +6,10 @@
     <title>Public Issue Reporter - Telangana</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Configuration -->
+    <script src="config.js"></script>
+    <!-- Google Maps API with all libraries -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCX8Wc6fPDlfRVV1_O7vT_KB9mZLdgWD1A&libraries=places,geometry&callback=initGoogleMaps"></script>
 </head>
 <body>
     <div class="container">
@@ -34,6 +38,70 @@
                 </div>
             </div>
 
+            <div class="location-section">
+                <div class="location-display">
+                    <div class="location-header">
+                        <i class="fas fa-location-dot"></i>
+                        <span>Your Location</span>
+                        <div id="location-loading" class="location-loading" style="display: none;">
+                            <span class="loading-spinner"></span>
+                            Detecting location...
+                        </div>
+                    </div>
+                    <div id="location-info" class="location-info">
+                        <div class="location-text">
+                            <i class="fas fa-map-pin"></i>
+                            <span id="current-location">Location will be detected automatically</span>
+                        </div>
+                        <div class="location-controls">
+                            <button id="refresh-location" class="btn-refresh" title="Refresh Location">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button id="toggle-map" class="btn-map" title="Show Map">
+                                <i class="fas fa-map"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Interactive Map -->
+                <div id="map-container" class="map-container" style="display: none;">
+                    <div id="map" class="map"></div>
+                    <div class="map-controls">
+                        <button id="get-directions" class="btn-directions">
+                            <i class="fas fa-route"></i> Get Directions
+                        </button>
+                        <button id="find-nearby" class="btn-nearby">
+                            <i class="fas fa-search"></i> Find Nearby
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Nearby Places Search -->
+                <div id="nearby-search" class="nearby-search" style="display: none;">
+                    <div class="search-header">
+                        <h3><i class="fas fa-search-location"></i> Find Nearby Places</h3>
+                        <button id="close-nearby" class="btn-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="search-controls">
+                        <select id="place-type" class="place-select">
+                            <option value="">Select Place Type</option>
+                            <option value="hospital">Hospital</option>
+                            <option value="police">Police Station</option>
+                            <option value="government_office">Government Office</option>
+                            <option value="fire_station">Fire Station</option>
+                            <option value="municipal_office">Municipal Office</option>
+                        </select>
+                        <button id="search-places" class="btn-search">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <div id="places-results" class="places-results"></div>
+                </div>
+            </div>
+
             <div class="form-section">
                 <form id="issue-form">
                     <div class="form-group">
@@ -43,7 +111,7 @@
 
                     <div class="form-group">
                         <label for="area"><i class="fas fa-map-marker-alt"></i> Area *</label>
-                        <input type="text" id="area" name="area" required placeholder="Enter your area/colony">
+                        <input type="text" id="area" name="area" required placeholder="Area will be auto-detected" readonly>
                     </div>
 
                     <div class="form-group">
@@ -59,6 +127,11 @@
                         <label for="problem"><i class="fas fa-comment-dots"></i> Problem Issue *</label>
                         <textarea id="problem" name="problem" required placeholder="Describe the issue in detail..." rows="4"></textarea>
                     </div>
+
+                    <!-- Hidden fields for location data -->
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                    <input type="hidden" id="full-address" name="full-address">
 
                     <div class="submit-section">
                         <button type="submit" class="btn btn-submit">

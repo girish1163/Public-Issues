@@ -25,7 +25,27 @@ git clone <your-repository-url>
 cd public-issue-reporter
 ```
 
-### 2. Configure Email Service
+### 2. Configure Google Maps API
+
+The application uses Google Maps Geocoding API for location detection. Follow these steps:
+
+1. **Get Google Maps API Key**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing one
+   - Enable **Geocoding API** and **Places API**
+   - Create an API key with appropriate restrictions
+
+2. **Update API Key Configuration**: In `config.js`, replace the placeholder:
+   ```javascript
+   const GOOGLE_MAPS_API_KEY = 'your_actual_google_api_key_here';
+   ```
+
+3. **Update HTML Script Tag**: In `index.html`, replace the placeholder in the Google Maps script:
+   ```html
+   <script async defer src="https://maps.googleapis.com/maps/api/js?key=your_actual_google_api_key_here&libraries=places&callback=initGoogleMaps"></script>
+   ```
+
+### 3. Configure Email Service
 
 The application uses EmailJS for sending emails. Follow these steps:
 
@@ -39,6 +59,9 @@ The application uses EmailJS for sending emails. Follow these steps:
    - `{{problem}}` - Problem description
    - `{{timestamp}}` - Report timestamp
    - `{{image_url}}` - Captured image (base64)
+   - `{{latitude}}` - GPS latitude
+   - `{{longitude}}` - GPS longitude
+   - `{{full_address}}` - Complete address
 
 4. **Update Configuration**: In `script.js`, replace the placeholder values:
    ```javascript
