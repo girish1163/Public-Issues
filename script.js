@@ -466,9 +466,24 @@ class IssueReporter {
             return;
         }
 
+        // Validate required fields
+        const area = this.areaInput.value.trim();
+        const city = this.citySelect.value;
+        const problem = document.getElementById('problem').value.trim();
+
+        if (!area || !city || !problem) {
+            alert('Please fill in all required fields (Area, City, and Problem Issue).');
+            return;
+        }
+
+        if (problem.length < 10) {
+            alert('Please provide more details about the issue (at least 10 characters).');
+            return;
+        }
+
         const formData = new FormData(this.form);
         const data = {
-            name: formData.get('name'),
+            name: formData.get('name') || 'Anonymous', // Use 'Anonymous' if name is empty
             area: formData.get('area'),
             city: formData.get('city'),
             problem: formData.get('problem'),
