@@ -160,7 +160,8 @@ class IssueReporter {
         const options = {
             enableHighAccuracy: true,
             timeout: 10000, // 10 seconds timeout
-            maximumAge: 60000 // Allow cached location up to 1 minute
+            maximumAge: 30000, // Allow cached location up to 30 seconds for faster response
+            desiredAccuracy: 'high' // Request highest possible accuracy
         };
 
         try {
@@ -170,7 +171,10 @@ class IssueReporter {
             const position = await new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
-                        console.log('Location obtained:', pos);
+                        console.log('High accuracy location obtained:', pos);
+                        console.log('GPS accuracy:', pos.coords.accuracy, 'meters');
+                        console.log('GPS altitude:', pos.coords.altitude);
+                        console.log('GPS speed:', pos.coords.speed);
                         resolve(pos);
                     },
                     (error) => {
@@ -206,7 +210,7 @@ class IssueReporter {
 
     async reverseGeocode(lat, lon) {
         try {
-            console.log('Starting reverse geocoding for:', lat, lon);
+            console.log('Starting high-accuracy reverse geocoding for:', lat, lon);
             
             // Check if Google Maps API is loaded
             if (!window.google || !window.google.maps) {
@@ -218,10 +222,16 @@ class IssueReporter {
             const geocoder = new window.google.maps.Geocoder();
             const latlng = new window.google.maps.LatLng(lat, lon);
 
+            // Enhanced geocoding with more precise options
             const result = await new Promise((resolve, reject) => {
-                geocoder.geocode({ 'location': latlng }, (results, status) => {
-                    console.log('Geocoding status:', status, 'Results:', results);
+                geocoder.geocode({ 
+                    'location': latlng,
+                    'language': 'en',
+                    'region': 'IN' // India region for better accuracy
+                }, (results, status) => {
+                    console.log('High-accuracy geocoding status:', status, 'Results:', results);
                     if (status === window.google.maps.GeocoderStatus.OK && results && results.length > 0) {
+                        console.log('Geocoding successful with', results.length, 'results');
                         resolve(results);
                     } else {
                         reject(new Error(`Geocoding failed: ${status}`));
@@ -255,58 +265,6 @@ class IssueReporter {
             this.citySelect.value = 'hyderabad';
         }
         
-        this.showLocationLoading(false);
-    }
-
-    updateLocationDisplay(result, lat, lon) {
-        const addressComponents = result.address_components || [];
-        const formattedAddress = result.formatted_address || '';
-        
-        // Extract address components
-        let area = '';
-        let city = '';
-        let locality = '';
-        
-        addressComponents.forEach(component => {
-            const types = component.types;
-            
-            if (types.includes('sublocality') || types.includes('neighborhood')) {
-                area = component.long_name;
-            } else if (types.includes('locality')) {
-                city = component.long_name;
-                locality = component.long_name;
-            } else if (types.includes('administrative_area_level_2')) {
-                if (!city) city = component.long_name;
-            }
-        });
-
-        // Update location display
-        this.currentLocation.textContent = formattedAddress;
-        
-        // Auto-fill form fields
-        if (area) {
-            this.areaInput.value = area;
-        } else if (locality) {
-            this.areaInput.value = locality;
-        }
-        
-        // Auto-select city if it matches Hyderabad or Secunderabad
-        if (city.toLowerCase().includes('hyderabad')) {
-            this.citySelect.value = 'hyderabad';
-        } else if (city.toLowerCase().includes('secunderabad')) {
-            this.citySelect.value = 'secunderabad';
-        }
-
-        // Update hidden fields
-        this.latitudeInput.value = lat;
-        this.longitudeInput.value = lon;
-        this.fullAddressInput.value = formattedAddress;
-
-        // Update map if it's already initialized
-        if (this.map) {
-            this.updateMap(lat, lon);
-        }
-
         this.showLocationLoading(false);
     }
 
