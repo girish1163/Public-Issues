@@ -86,9 +86,7 @@ class IssueReporter {
         });
         
         // Auto-detect location on page load with immediate detection
-        setTimeout(() => {
-            this.detectLocation();
-        }, 500); // Start detection after 500ms for page stability
+        this.detectLocation();
     }
 
     async startCamera() {
@@ -159,22 +157,17 @@ class IssueReporter {
 
         const options = {
             enableHighAccuracy: true,
-            timeout: 10000, // 10 seconds timeout
-            maximumAge: 30000, // Allow cached location up to 30 seconds for faster response
-            desiredAccuracy: 'high' // Request highest possible accuracy
+            timeout: 15000,
+            maximumAge: 60000
         };
 
         try {
-            console.log('Requesting location with options:', options);
+            console.log('Requesting location...');
             
-            // Simple getCurrentPosition approach that was working before
             const position = await new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
-                        console.log('High accuracy location obtained:', pos);
-                        console.log('GPS accuracy:', pos.coords.accuracy, 'meters');
-                        console.log('GPS altitude:', pos.coords.altitude);
-                        console.log('GPS speed:', pos.coords.speed);
+                        console.log('Location obtained successfully');
                         resolve(pos);
                     },
                     (error) => {
@@ -186,7 +179,6 @@ class IssueReporter {
             });
 
             this.currentPosition = position;
-            console.log('Current position set:', position.coords);
             
             // Update coordinates immediately
             this.latitudeInput.value = position.coords.latitude;
@@ -195,22 +187,14 @@ class IssueReporter {
             await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
             
         } catch (error) {
-            console.error('Location detection error:', error);
-            let errorMessage = 'Unable to detect your location';
-            
-            if (error.code === 1) {
-                errorMessage = 'Location access denied. Please enable location permissions.';
-            } else if (error.code === 3) {
-                errorMessage = 'Location request timed out. Please try again.';
-            }
-            
-            this.showLocationError(errorMessage);
+            console.error('Location detection failed:', error);
+            this.showLocationError('Location detection failed. Please try again.');
         }
     }
 
     async reverseGeocode(lat, lon) {
         try {
-            console.log('Starting high-accuracy reverse geocoding for:', lat, lon);
+            console.log('Starting reverse geocoding for:', lat, lon);
             
             // Check if Google Maps API is loaded
             if (!window.google || !window.google.maps) {
@@ -222,16 +206,10 @@ class IssueReporter {
             const geocoder = new window.google.maps.Geocoder();
             const latlng = new window.google.maps.LatLng(lat, lon);
 
-            // Enhanced geocoding with more precise options
             const result = await new Promise((resolve, reject) => {
-                geocoder.geocode({ 
-                    'location': latlng,
-                    'language': 'en',
-                    'region': 'IN' // India region for better accuracy
-                }, (results, status) => {
-                    console.log('High-accuracy geocoding status:', status, 'Results:', results);
+                geocoder.geocode({ 'location': latlng }, (results, status) => {
+                    console.log('Geocoding status:', status);
                     if (status === window.google.maps.GeocoderStatus.OK && results && results.length > 0) {
-                        console.log('Geocoding successful with', results.length, 'results');
                         resolve(results);
                     } else {
                         reject(new Error(`Geocoding failed: ${status}`));
@@ -247,7 +225,6 @@ class IssueReporter {
             }
         } catch (error) {
             console.error('Google Geocoding error:', error);
-            // Fallback for reliability
             this.fallbackLocationUpdate(lat, lon);
         }
     }
