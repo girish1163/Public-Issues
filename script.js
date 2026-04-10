@@ -147,6 +147,7 @@ class IssueReporter {
     }
 
     async detectLocation() {
+        console.log('Starting location detection...');
         this.showLocationLoading(true);
         
         if (!navigator.geolocation) {
@@ -156,26 +157,51 @@ class IssueReporter {
 
         const options = {
             enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            timeout: 15000, // Increased timeout
+            maximumAge: 60000 // Allow cached location up to 1 minute
         };
 
         try {
+            console.log('Requesting location with options:', options);
             const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, options);
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        console.log('Location obtained:', pos);
+                        resolve(pos);
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', error);
+                        reject(error);
+                    },
+                    options
+                );
             });
 
             this.currentPosition = position;
+            console.log('Current position set:', position.coords);
+            
+            // Update coordinates immediately
+            this.latitudeInput.value = position.coords.latitude;
+            this.longitudeInput.value = position.coords.longitude;
+            
             await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
             
         } catch (error) {
             console.error('Location detection error:', error);
             let errorMessage = 'Unable to detect your location';
             
-            if (error.code === 1) {
-                errorMessage = 'Location access denied. Please enable location permissions.';
-            } else if (error.code === 3) {
-                errorMessage = 'Location request timed out. Please try again.';
+            switch(error.code) {
+                case 1:
+                    errorMessage = 'Location access denied. Please enable location permissions in your browser settings.';
+                    break;
+                case 2:
+                    errorMessage = 'Location unavailable. Please check your GPS/location services.';
+                    break;
+                case 3:
+                    errorMessage = 'Location request timed out. Please try again.';
+                    break;
+                default:
+                    errorMessage = 'Location detection failed: ' + error.message;
             }
             
             this.showLocationError(errorMessage);
@@ -184,9 +210,12 @@ class IssueReporter {
 
     async reverseGeocode(lat, lon) {
         try {
+            console.log('Starting reverse geocoding for:', lat, lon);
+            
             // Check if Google Maps API is loaded
-            if (!googleMapsLoaded || !window.google || !window.google.maps) {
-                this.showLocationError('Google Maps API not loaded. Please check your API key.');
+            if (!window.google || !window.google.maps) {
+                console.log('Google Maps API not loaded, using fallback');
+                this.fallbackLocationUpdate(lat, lon);
                 return;
             }
 
@@ -195,7 +224,8 @@ class IssueReporter {
 
             const result = await new Promise((resolve, reject) => {
                 geocoder.geocode({ 'location': latlng }, (results, status) => {
-                    if (status === window.google.maps.GeocoderStatus.OK) {
+                    console.log('Geocoding status:', status, 'Results:', results);
+                    if (status === window.google.maps.GeocoderStatus.OK && results && results.length > 0) {
                         resolve(results);
                     } else {
                         reject(new Error(`Geocoding failed: ${status}`));
@@ -211,7 +241,25 @@ class IssueReporter {
         } catch (error) {
             console.error('Google Geocoding error:', error);
             this.showLocationError('Failed to get address details: ' + error.message);
+            // Fallback to basic location display
+            this.fallbackLocationUpdate(lat, lon);
         }
+    }
+
+    fallbackLocationUpdate(lat, lon) {
+        console.log('Using fallback location update');
+        this.currentLocation.textContent = `Location detected: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+        this.latitudeInput.value = lat;
+        this.longitudeInput.value = lon;
+        this.fullAddressInput.value = `Coordinates: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+        
+        // Try to set area based on coordinates (basic check for Hyderabad region)
+        if (lat >= 17.3 && lat <= 17.5 && lon >= 78.2 && lon <= 78.6) {
+            this.areaInput.value = 'Hyderabad';
+            this.citySelect.value = 'hyderabad';
+        }
+        
+        this.showLocationLoading(false);
     }
 
     updateLocationDisplay(result, lat, lon) {
@@ -547,6 +595,7 @@ class IssueReporter {
     }
 
     showLocationError(message) {
+        console.log('Location error:', message);
         const locationStatus = document.getElementById('location-status');
         if (locationStatus) {
             locationStatus.innerHTML = `<span class="status-dot error"></span><span>Error</span>`;
@@ -555,13 +604,13 @@ class IssueReporter {
         this.currentLocation.style.color = '#dc3545';
         this.showLocationLoading(false);
         
-        // Reset color after 3 seconds
+        // Reset color after 5 seconds
         setTimeout(() => {
             this.currentLocation.style.color = '#495057';
             if (locationStatus) {
                 locationStatus.innerHTML = '<span class="status-dot active"></span><span>GPS Active</span>';
             }
-        }, 3000);
+        }, 5000);
     }
 
     async handleSubmit(e) {
