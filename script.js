@@ -50,6 +50,11 @@ class IssueReporter {
         this.searchPlacesBtn = document.getElementById('search-places');
         this.placesResults = document.getElementById('places-results');
         
+        // New modern elements
+        this.charCount = document.getElementById('char-count');
+        this.problemTextarea = document.getElementById('problem');
+        this.bottomNav = document.querySelectorAll('.nav-item');
+        
         this.currentPosition = null;
         this.placesService = null;
         this.directionsService = null;
@@ -70,6 +75,14 @@ class IssueReporter {
         // Nearby search events
         this.closeNearbyBtn.addEventListener('click', () => this.hideNearbySearch());
         this.searchPlacesBtn.addEventListener('click', () => this.searchNearbyPlaces());
+        
+        // Character counter
+        this.problemTextarea.addEventListener('input', () => this.updateCharCount());
+        
+        // Bottom navigation
+        this.bottomNav.forEach(item => {
+            item.addEventListener('click', (e) => this.handleNavClick(e));
+        });
         
         // Close modal when clicking outside
         this.modal.addEventListener('click', (e) => {
@@ -438,6 +451,110 @@ class IssueReporter {
         window.open(`https://www.google.com/maps/dir/${origin}/${destination}`, '_blank');
     }
 
+    updateCharCount() {
+        const currentLength = this.problemTextarea.value.length;
+        this.charCount.textContent = currentLength;
+        
+        if (currentLength > 500) {
+            this.charCount.style.color = '#dc3545';
+        } else {
+            this.charCount.style.color = '#6c757d';
+        }
+    }
+
+    handleNavClick(e) {
+        const clickedNav = e.currentTarget;
+        const section = clickedNav.dataset.section;
+        
+        // Remove active class from all nav items
+        this.bottomNav.forEach(item => item.classList.remove('active'));
+        
+        // Add active class to clicked item
+        clickedNav.classList.add('active');
+        
+        // Scroll to section (optional enhancement)
+        this.scrollToSection(section);
+    }
+
+    scrollToSection(section) {
+        let targetElement;
+        switch(section) {
+            case 'camera':
+                targetElement = document.querySelector('.camera-section');
+                break;
+            case 'location':
+                targetElement = document.querySelector('.location-section');
+                break;
+            case 'report':
+                targetElement = document.querySelector('.form-section');
+                break;
+        }
+        
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    async startCamera() {
+        try {
+            // Show camera overlay for better framing
+            const overlay = document.querySelector('.camera-overlay');
+            if (overlay) {
+                overlay.style.display = 'block';
+            }
+
+            this.stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 1920 }, // Higher resolution for better quality
+                    height: { ideal: 1080 }
+                } 
+            });
+            
+            this.video.srcObject = this.stream;
+            this.video.style.display = 'block';
+            this.placeholder.style.display = 'none';
+            
+            this.video.onloadedmetadata = () => {
+                this.captureBtn.innerHTML = '<div class="btn-content"><i class="fas fa-camera"></i><span>Capture</span></div>';
+                this.captureBtn.onclick = () => this.capturePhoto();
+            };
+        } catch (error) {
+            console.error('Camera access error:', error);
+            this.showCameraError();
+        }
+    }
+
+    capturePhoto() {
+        // Set canvas dimensions to match video for better quality
+        this.canvas.width = this.video.videoWidth;
+        this.canvas.height = this.video.videoHeight;
+        const context = this.canvas.getContext('2d');
+        
+        // Apply filters for better image quality
+        context.filter = 'contrast(1.1) brightness(1.05)';
+        context.drawImage(this.video, 0, 0);
+        
+        this.capturedImage = this.canvas.toDataURL('image/jpeg', 0.9); // Higher quality
+        
+        // Stop camera stream
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+        }
+        
+        // Hide camera overlay
+        const overlay = document.querySelector('.camera-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
+        // Show captured image
+        this.video.style.display = 'none';
+        this.canvas.style.display = 'block';
+        this.captureBtn.style.display = 'none';
+        this.retakeBtn.style.display = 'inline-block';
+    }
+
     showLocationLoading(show) {
         if (show) {
             this.locationLoading.style.display = 'flex';
@@ -447,7 +564,19 @@ class IssueReporter {
         }
     }
 
+    showCameraError() {
+        alert('Camera access denied or not available. Please check permissions and try again.');
+        const overlay = document.querySelector('.camera-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    }
+
     showLocationError(message) {
+        const locationStatus = document.getElementById('location-status');
+        if (locationStatus) {
+            locationStatus.innerHTML = `<span class="status-dot error"></span><span>Error</span>`;
+        }
         this.currentLocation.textContent = message;
         this.currentLocation.style.color = '#dc3545';
         this.showLocationLoading(false);
@@ -455,6 +584,9 @@ class IssueReporter {
         // Reset color after 3 seconds
         setTimeout(() => {
             this.currentLocation.style.color = '#495057';
+            if (locationStatus) {
+                locationStatus.innerHTML = '<span class="status-dot active"></span><span>GPS Active</span>';
+            }
         }, 3000);
     }
 

@@ -3,66 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Issue Reporter - Telangana</title>
+    <title>Report Issue - Telangana</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Configuration -->
     <script src="config.js"></script>
     <!-- Google Maps API with all libraries -->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCX8Wc6fPDlfRVV1_O7vT_KB9mZLdgWD1A&libraries=places,geometry&callback=initGoogleMaps"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-exclamation-triangle"></i> Public Issue Reporter</h1>
-            <p>Report issues in your area to the Telangana Government</p>
-        </header>
-
-        <main class="main-content">
-            <div class="image-section">
-                <div class="camera-container">
-                    <video id="camera-preview" class="camera-preview" style="display: none;"></video>
-                    <canvas id="image-canvas" class="image-canvas" style="display: none;"></canvas>
-                    <div id="placeholder" class="image-placeholder">
-                        <i class="fas fa-camera fa-3x"></i>
-                        <p>Click camera icon to capture image</p>
-                    </div>
+    <!-- Mobile App Container -->
+    <div class="app-container">
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-flag"></i>
+                    <span>Report Telangana</span>
                 </div>
-                <div class="camera-controls">
-                    <button id="capture-btn" class="btn btn-primary">
-                        <i class="fas fa-camera"></i> Capture Photo
-                    </button>
-                    <button id="retake-btn" class="btn btn-secondary" style="display: none;">
-                        <i class="fas fa-redo"></i> Retake
+                <div class="header-actions">
+                    <button class="header-btn" id="emergency-btn">
+                        <i class="fas fa-phone-alt"></i>
                     </button>
                 </div>
             </div>
+        </header>
 
-            <div class="location-section">
-                <div class="location-display">
-                    <div class="location-header">
-                        <i class="fas fa-location-dot"></i>
-                        <span>Your Location</span>
-                        <div id="location-loading" class="location-loading" style="display: none;">
-                            <span class="loading-spinner"></span>
-                            Detecting location...
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Camera Section -->
+            <section class="camera-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-camera"></i> Capture Issue</h2>
+                    <p>Take a clear photo of the problem</p>
+                </div>
+                
+                <div class="camera-wrapper">
+                    <div class="camera-container-modern">
+                        <video id="camera-preview" class="camera-preview-modern" style="display: none;"></video>
+                        <canvas id="image-canvas" class="image-canvas-modern" style="display: none;"></canvas>
+                        <div id="placeholder" class="camera-placeholder-modern">
+                            <div class="placeholder-content">
+                                <div class="camera-icon-wrapper">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <h3>Take Photo</h3>
+                                <p>Tap to capture the issue</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Camera Overlay -->
+                        <div class="camera-overlay" style="display: none;">
+                            <div class="viewfinder">
+                                <div class="corner-tl"></div>
+                                <div class="corner-tr"></div>
+                                <div class="corner-bl"></div>
+                                <div class="corner-br"></div>
+                            </div>
                         </div>
                     </div>
-                    <div id="location-info" class="location-info">
-                        <div class="location-text">
-                            <i class="fas fa-map-pin"></i>
-                            <span id="current-location">Location will be detected automatically</span>
+                    
+                    <!-- Camera Controls -->
+                    <div class="camera-actions">
+                        <button id="capture-btn" class="capture-btn-modern">
+                            <div class="btn-content">
+                                <i class="fas fa-camera"></i>
+                                <span>Capture</span>
+                            </div>
+                        </button>
+                        <button id="retake-btn" class="retake-btn-modern" style="display: none;">
+                            <div class="btn-content">
+                                <i class="fas fa-redo"></i>
+                                <span>Retake</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Location Section -->
+            <section class="location-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-location-dot"></i> Your Location</h2>
+                    <p>Detecting your current area...</p>
+                </div>
+                
+                <div class="location-card">
+                    <div class="location-main">
+                        <div class="location-icon">
+                            <i class="fas fa-map-marker-alt"></i>
                         </div>
-                        <div class="location-controls">
-                            <button id="refresh-location" class="btn-refresh" title="Refresh Location">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                            <button id="toggle-map" class="btn-map" title="Show Map">
-                                <i class="fas fa-map"></i>
-                            </button>
+                        <div class="location-info-modern">
+                            <div class="location-text" id="current-location">Detecting location...</div>
+                            <div class="location-status" id="location-status">
+                                <span class="status-dot active"></span>
+                                <span>GPS Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="location-actions">
+                        <button id="refresh-location" class="action-btn refresh-btn">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Refresh</span>
+                        </button>
+                        <button id="toggle-map" class="action-btn map-btn">
+                            <i class="fas fa-map"></i>
+                            <span>Map</span>
+                        </button>
+                    </div>
+                    
+                    <div id="location-loading" class="location-loading-modern" style="display: none;">
+                        <div class="loading-content">
+                            <div class="loading-spinner-modern"></div>
+                            <span>Getting location...</span>
                         </div>
                     </div>
                 </div>
+            </section>
                 
                 <!-- Interactive Map -->
                 <div id="map-container" class="map-container" style="display: none;">
@@ -102,30 +160,63 @@
                 </div>
             </div>
 
-            <div class="form-section">
-                <form id="issue-form">
-                    <div class="form-group">
-                        <label for="name"><i class="fas fa-user"></i> Name (Optional)</label>
-                        <input type="text" id="name" name="name" placeholder="Enter your name (optional)">
+            <!-- Report Form Section -->
+            <section class="form-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-edit"></i> Report Details</h2>
+                    <p>Provide information about the issue</p>
+                </div>
+                
+                <form id="issue-form" class="modern-form">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="name" class="form-label">
+                                <i class="fas fa-user"></i>
+                                <span>Your Name</span>
+                                <small>Optional</small>
+                            </label>
+                            <input type="text" id="name" name="name" class="form-input" placeholder="Enter your name (optional)">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="area" class="form-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Area</span>
+                                <small>Auto-detected</small>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" id="area" name="area" class="form-input" required placeholder="Area will be auto-detected" readonly>
+                                <i class="input-icon fas fa-lock"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="city" class="form-label">
+                                <i class="fas fa-city"></i>
+                                <span>City</span>
+                                <small>Required</small>
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="city" name="city" class="form-select" required>
+                                    <option value="">Select City</option>
+                                    <option value="hyderabad">Hyderabad</option>
+                                    <option value="secunderabad">Secunderabad</option>
+                                </select>
+                                <i class="select-icon fas fa-chevron-down"></i>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="area"><i class="fas fa-map-marker-alt"></i> Area *</label>
-                        <input type="text" id="area" name="area" required placeholder="Area will be auto-detected" readonly>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="city"><i class="fas fa-city"></i> City *</label>
-                        <select id="city" name="city" required>
-                            <option value="">Select City</option>
-                            <option value="hyderabad">Hyderabad</option>
-                            <option value="secunderabad">Secunderabad</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="problem"><i class="fas fa-comment-dots"></i> Problem Issue *</label>
-                        <textarea id="problem" name="problem" required placeholder="Describe the issue in detail..." rows="4"></textarea>
+                    <div class="form-field full-width">
+                        <label for="problem" class="form-label">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Describe the Issue</span>
+                            <small>Required • Minimum 10 characters</small>
+                        </label>
+                        <textarea id="problem" name="problem" class="form-textarea" required placeholder="Please describe the issue in detail. Include what happened, where exactly, and any other relevant information..." rows="4"></textarea>
+                        <div class="char-counter">
+                            <span id="char-count">0</span> / 500
+                        </div>
                     </div>
 
                     <!-- Hidden fields for location data -->
@@ -134,32 +225,70 @@
                     <input type="hidden" id="full-address" name="full-address">
 
                     <div class="submit-section">
-                        <button type="submit" class="btn btn-submit">
-                            <i class="fas fa-paper-plane"></i> Submit Report
+                        <button type="submit" class="submit-btn-modern">
+                            <div class="btn-content">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Submit Report</span>
+                                <div class="btn-shine"></div>
+                            </div>
                         </button>
                     </div>
                 </form>
-            </div>
+            </section>
         </main>
 
-        <div id="success-modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <i class="fas fa-check-circle success-icon"></i>
-                    <h2>Report Submitted Successfully!</h2>
+        <!-- Success Modal -->
+        <div id="success-modal" class="modal-modern" style="display: none;">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content-modern">
+                <div class="modal-header-modern">
+                    <div class="success-animation">
+                        <div class="success-circle">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    <h2>Report Submitted!</h2>
+                    <p>Your issue has been sent to Telangana authorities</p>
                 </div>
-                <div class="modal-body">
-                    <p>Your issue has been reported to the Telangana CM office. You will receive a confirmation email shortly.</p>
+                <div class="modal-body-modern">
+                    <div class="success-details">
+                        <div class="detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Location recorded</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-camera"></i>
+                            <span>Photo captured</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email sent to CM office</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button id="close-modal" class="btn btn-primary">OK</button>
+                <div class="modal-footer-modern">
+                    <button id="close-modal" class="modal-btn">
+                        <span>Done</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <footer>
-            <p>&copy; 2024 Public Issue Reporter - Telangana. All rights reserved.</p>
-        </footer>
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-section="camera">
+                <i class="fas fa-camera"></i>
+                <span>Camera</span>
+            </button>
+            <button class="nav-item" data-section="location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Location</span>
+            </button>
+            <button class="nav-item" data-section="report">
+                <i class="fas fa-edit"></i>
+                <span>Report</span>
+            </button>
+        </nav>
     </div>
 
     <script src="script.js"></script>
