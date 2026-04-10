@@ -85,8 +85,10 @@ class IssueReporter {
             }
         });
         
-        // Auto-detect location on page load
-        this.detectLocation();
+        // Auto-detect location on page load with immediate detection
+        setTimeout(() => {
+            this.detectLocation();
+        }, 500); // Start detection after 500ms for page stability
     }
 
     async startCamera() {
@@ -157,25 +159,53 @@ class IssueReporter {
 
         const options = {
             enableHighAccuracy: true,
-            timeout: 15000, // Increased timeout
-            maximumAge: 60000 // Allow cached location up to 1 minute
+            timeout: 2000, // Fast detection like Blinkit/Zepto (2 seconds)
+            maximumAge: 30000 // Allow cached location up to 30 seconds
         };
 
         try {
             console.log('Requesting location with options:', options);
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
+            
+            // Try watchPosition first for faster detection like Blinkit/Zepto
+            let position = await new Promise((resolve, reject) => {
+                const watchId = navigator.geolocation.watchPosition(
                     (pos) => {
-                        console.log('Location obtained:', pos);
+                        console.log('Fast location detected:', pos);
+                        navigator.geolocation.clearWatch(watchId);
                         resolve(pos);
                     },
                     (error) => {
-                        console.error('Geolocation error:', error);
+                        console.error('Watch position error:', error);
+                        navigator.geolocation.clearWatch(watchId);
                         reject(error);
                     },
                     options
                 );
+                
+                // Fallback to getCurrentPosition after 2 seconds
+                setTimeout(() => {
+                    navigator.geolocation.clearWatch(watchId);
+                    reject(new Error('Watch timeout, using fallback'));
+                }, 2000);
             });
+
+            // If watchPosition failed, use getCurrentPosition as fallback
+            if (position.message && position.message.includes('fallback')) {
+                console.log('Using getCurrentPosition fallback');
+                position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            console.log('Fallback location obtained:', pos);
+                            resolve(pos);
+                        },
+                        (error) => {
+                            console.error('Fallback geolocation error:', error);
+                            reject(error);
+                        },
+                        options
+                    );
+                });
+            }
 
             this.currentPosition = position;
             console.log('Current position set:', position.coords);
@@ -210,11 +240,11 @@ class IssueReporter {
 
     async reverseGeocode(lat, lon) {
         try {
-            console.log('Starting reverse geocoding for:', lat, lon);
+            console.log('Starting fast reverse geocoding for:', lat, lon);
             
             // Check if Google Maps API is loaded
             if (!window.google || !window.google.maps) {
-                console.log('Google Maps API not loaded, using fallback');
+                console.log('Google Maps API not loaded, using immediate fallback');
                 this.fallbackLocationUpdate(lat, lon);
                 return;
             }
@@ -222,26 +252,32 @@ class IssueReporter {
             const geocoder = new window.google.maps.Geocoder();
             const latlng = new window.google.maps.LatLng(lat, lon);
 
-            const result = await new Promise((resolve, reject) => {
-                geocoder.geocode({ 'location': latlng }, (results, status) => {
-                    console.log('Geocoding status:', status, 'Results:', results);
-                    if (status === window.google.maps.GeocoderStatus.OK && results && results.length > 0) {
-                        resolve(results);
-                    } else {
-                        reject(new Error(`Geocoding failed: ${status}`));
-                    }
-                });
-            });
+            // Fast geocoding with timeout for Blinkit/Zepto speed
+            const result = await Promise.race([
+                new Promise((resolve, reject) => {
+                    geocoder.geocode({ 'location': latlng }, (results, status) => {
+                        console.log('Fast geocoding status:', status, 'Results:', results);
+                        if (status === window.google.maps.GeocoderStatus.OK && results && results.length > 0) {
+                            resolve(results);
+                        } else {
+                            reject(new Error(`Geocoding failed: ${status}`));
+                        }
+                    });
+                }),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Geocoding timeout')), 3000)
+                )
+            ]);
 
             if (result && result.length > 0) {
                 this.updateLocationDisplay(result[0], lat, lon);
             } else {
-                this.showLocationError('Unable to get address from coordinates');
+                console.log('Geocoding failed, using fallback');
+                this.fallbackLocationUpdate(lat, lon);
             }
         } catch (error) {
             console.error('Google Geocoding error:', error);
-            this.showLocationError('Failed to get address details: ' + error.message);
-            // Fallback to basic location display
+            // Immediate fallback for Blinkit/Zepto experience
             this.fallbackLocationUpdate(lat, lon);
         }
     }
