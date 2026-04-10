@@ -225,13 +225,12 @@ body {
 /* Camera Actions */
 .camera-actions {
     display: flex;
-    gap: 12px;
-    margin-top: 20px;
+    gap: 8px;
 }
 
-.capture-btn-modern,
-.retake-btn-modern {
-    flex: 1;
+/* === IMAGE PREVIEW SECTION === */
+.image-preview-section {
+    background: white;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     border-radius: 16px;

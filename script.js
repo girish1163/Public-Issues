@@ -25,6 +25,10 @@ class IssueReporter {
         this.modal = document.getElementById('success-modal');
         this.closeModalBtn = document.getElementById('close-modal');
         
+        // Multiple images storage
+        this.capturedImages = [];
+        this.currentImageIndex = 0;
+        
         // Location elements
         this.locationLoading = document.getElementById('location-loading');
         this.currentLocation = document.getElementById('current-location');
@@ -54,6 +58,14 @@ class IssueReporter {
         this.charCount = document.getElementById('char-count');
         this.problemTextarea = document.getElementById('problem');
         
+        // Image preview elements
+        this.imagePreviewSection = document.getElementById('image-preview-section');
+        this.imageCounter = document.getElementById('image-counter');
+        this.prevImageBtn = document.getElementById('prev-image');
+        this.nextImageBtn = document.getElementById('next-image');
+        this.addMoreBtn = document.getElementById('add-more-btn');
+        this.imageThumbnails = document.getElementById('image-thumbnails');
+        
         this.currentPosition = null;
         this.placesService = null;
         this.directionsService = null;
@@ -64,19 +76,14 @@ class IssueReporter {
         this.retakeBtn.addEventListener('click', () => this.retakePhoto());
         this.form.addEventListener('submit', (e) => this.handleSubmit(e));
         this.closeModalBtn.addEventListener('click', () => this.closeModal());
-        this.refreshLocationBtn.addEventListener('click', () => this.detectLocation());
-        
-        // Map events
-        this.toggleMapBtn.addEventListener('click', () => this.toggleMap());
-        this.getDirectionsBtn.addEventListener('click', () => this.getDirections());
-        this.findNearbyBtn.addEventListener('click', () => this.showNearbySearch());
-        
-        // Nearby search events
-        this.closeNearbyBtn.addEventListener('click', () => this.hideNearbySearch());
-        this.searchPlacesBtn.addEventListener('click', () => this.searchNearbyPlaces());
         
         // Character counter
         this.problemTextarea.addEventListener('input', () => this.updateCharCount());
+        
+        // Image preview navigation events
+        this.prevImageBtn.addEventListener('click', () => this.viewPreviousImage());
+        this.nextImageBtn.addEventListener('click', () => this.viewNextImage());
+        this.addMoreBtn.addEventListener('click', () => this.startCamera());
         
         // Close modal when clicking outside
         this.modal.addEventListener('click', (e) => {
@@ -103,10 +110,10 @@ class IssueReporter {
             this.video.style.display = 'block';
             this.placeholder.style.display = 'none';
             
-            this.video.onloadedmetadata = () => {
+            if (this.captureBtn) {
                 this.captureBtn.innerHTML = '<i class="fas fa-camera"></i> Capture Now';
                 this.captureBtn.onclick = () => this.capturePhoto();
-            };
+            }
         } catch (error) {
             console.error('Camera access error:', error);
             this.showCameraError();
@@ -119,18 +126,88 @@ class IssueReporter {
         const context = this.canvas.getContext('2d');
         context.drawImage(this.video, 0, 0);
         
-        this.capturedImage = this.canvas.toDataURL('image/jpeg', 0.8);
+        // Store captured image
+        const imageData = this.canvas.toDataURL('image/jpeg', 0.9);
+        this.capturedImages.push(imageData);
+        this.capturedImage = imageData;
         
         // Stop camera stream
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());
         }
         
+        // Hide camera overlay
+        const overlay = document.querySelector('.camera-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
         // Show captured image
         this.video.style.display = 'none';
         this.canvas.style.display = 'block';
+        this.placeholder.style.display = 'none';
         this.captureBtn.style.display = 'none';
-        this.retakeBtn.style.display = 'inline-block';
+        this.retakeBtn.style.display = 'inline-flex';
+        
+        console.log('Image captured, total images:', this.capturedImages.length);
+        this.displayCurrentImage();
+    }
+
+    displayCurrentImage() {
+        if (this.capturedImages.length > 0) {
+            this.canvas.style.display = 'block';
+            this.placeholder.style.display = 'none';
+            this.captureBtn.style.display = 'none';
+            this.retakeBtn.style.display = 'inline-flex';
+            
+            // Update image counter and navigation buttons
+            this.updateImagePreview();
+        }
+    }
+
+    updateImagePreview() {
+        this.imageCounter.textContent = `${this.capturedImages.length} image${this.capturedImages.length !== 1 ? 's' : ''}`;
+        
+        // Update navigation buttons
+        this.prevImageBtn.disabled = this.currentImageIndex <= 0;
+        this.nextImageBtn.disabled = this.currentImageIndex >= this.capturedImages.length - 1;
+        
+        // Show/hide preview section
+        if (this.capturedImages.length > 0) {
+            this.imagePreviewSection.style.display = 'block';
+        } else {
+            this.imagePreviewSection.style.display = 'none';
+        }
+    }
+
+    viewPreviousImage() {
+        if (this.currentImageIndex > 0) {
+            this.currentImageIndex--;
+            const imageData = this.capturedImages[this.currentImageIndex];
+            const img = new Image();
+            img.onload = () => {
+                const ctx = this.canvas.getContext('2d');
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = imageData;
+            this.displayCurrentImage();
+        }
+    }
+
+    viewNextImage() {
+        if (this.currentImageIndex < this.capturedImages.length - 1) {
+            this.currentImageIndex++;
+            const imageData = this.capturedImages[this.currentImageIndex];
+            const img = new Image();
+            img.onload = () => {
+                const ctx = this.canvas.getContext('2d');
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = imageData;
+            this.displayCurrentImage();
+        }
     }
 
     retakePhoto() {
@@ -194,10 +271,12 @@ class IssueReporter {
         try {
             console.log('Starting reverse geocoding for:', lat, lon);
             
+            // Show location immediately with coordinates
+            this.fallbackLocationUpdate(lat, lon);
+            
             // Check if Google Maps API is loaded
             if (!window.google || !window.google.maps) {
-                console.log('Google Maps API not loaded, using fallback');
-                this.fallbackLocationUpdate(lat, lon);
+                console.log('Google Maps API not loaded, coordinates shown above');
                 return;
             }
 
@@ -217,12 +296,11 @@ class IssueReporter {
             if (result && result.length > 0) {
                 this.updateLocationDisplay(result[0], lat, lon);
             } else {
-                console.log('Geocoding failed, using fallback');
-                this.fallbackLocationUpdate(lat, lon);
+                console.log('Geocoding failed, coordinates already shown');
             }
         } catch (error) {
             console.error('Google Geocoding error:', error);
-            this.fallbackLocationUpdate(lat, lon);
+            console.log('Coordinates already shown above');
         }
     }
 

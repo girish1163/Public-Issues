@@ -63,7 +63,7 @@
                         </div>
                     </div>
                     
-                    <!-- Camera Controls -->
+                    <!-- Camera Actions -->
                     <div class="camera-actions">
                         <button id="capture-btn" class="capture-btn-modern">
                             <div class="btn-content">
@@ -77,6 +77,31 @@
                                 <span>Retake</span>
                             </div>
                         </button>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <div class="image-preview-section" id="image-preview-section" style="display: none;">
+                        <div class="preview-header">
+                            <h3><i class="fas fa-images"></i> Captured Images</h3>
+                            <span id="image-counter">0 images</span>
+                        </div>
+                        <div class="preview-actions">
+                            <button class="preview-btn prev-btn" id="prev-image" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                                <span>Previous</span>
+                            </button>
+                            <button class="preview-btn next-btn" id="next-image" disabled>
+                                <span>Next</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="preview-btn add-more-btn" id="add-more-btn">
+                                <i class="fas fa-plus"></i>
+                                <span>Add More</span>
+                            </button>
+                        </div>
+                        <div class="image-thumbnails" id="image-thumbnails">
+                            <!-- Thumbnails will be added here -->
+                        </div>
                     </div>
                 </div>
             </section>
