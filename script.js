@@ -548,11 +548,11 @@ class IssueReporter {
             overlay.style.display = 'none';
         }
         
-        // Show captured image
+        // Show captured image - Fix the display issue
         this.video.style.display = 'none';
         this.canvas.style.display = 'block';
         this.captureBtn.style.display = 'none';
-        this.retakeBtn.style.display = 'inline-block';
+        this.retakeBtn.style.display = 'inline-flex';
     }
 
     showLocationLoading(show) {
