@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Issue Reporter - Telangana</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-exclamation-triangle"></i> Public Issue Reporter</h1>
+            <p>Report issues in your area to the Telangana Government</p>
+        </header>
+
+        <main class="main-content">
+            <div class="image-section">
+                <div class="camera-container">
+                    <video id="camera-preview" class="camera-preview" style="display: none;"></video>
+                    <canvas id="image-canvas" class="image-canvas" style="display: none;"></canvas>
+                    <div id="placeholder" class="image-placeholder">
+                        <i class="fas fa-camera fa-3x"></i>
+                        <p>Click camera icon to capture image</p>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button id="capture-btn" class="btn btn-primary">
+                        <i class="fas fa-camera"></i> Capture Photo
+                    </button>
+                    <button id="retake-btn" class="btn btn-secondary" style="display: none;">
+                        <i class="fas fa-redo"></i> Retake
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <form id="issue-form">
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-user"></i> Name *</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="area"><i class="fas fa-map-marker-alt"></i> Area *</label>
+                        <input type="text" id="area" name="area" required placeholder="Enter your area/colony">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city"><i class="fas fa-city"></i> City *</label>
+                        <select id="city" name="city" required>
+                            <option value="">Select City</option>
+                            <option value="hyderabad">Hyderabad</option>
+                            <option value="secunderabad">Secunderabad</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="problem"><i class="fas fa-comment-dots"></i> Problem Issue *</label>
+                        <textarea id="problem" name="problem" required placeholder="Describe the issue in detail..." rows="4"></textarea>
+                    </div>
+
+                    <div class="submit-section">
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-paper-plane"></i> Submit Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <div id="success-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <i class="fas fa-check-circle success-icon"></i>
+                    <h2>Report Submitted Successfully!</h2>
+                </div>
+                <div class="modal-body">
+                    <p>Your issue has been reported to the Telangana CM office. You will receive a confirmation email shortly.</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="close-modal" class="btn btn-primary">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 Public Issue Reporter - Telangana. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
